@@ -7,7 +7,7 @@
   "info": {
     "description": "",
     "author": {
-      "name": false,
+      "name": "Adam",
       "url": ""
     },
     "keywords": [],
@@ -29,6 +29,48 @@
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
+  "routes": [
+    {
+      "path": "getInfo",
+      "url": "https://ws.audioscrobbler.com/2.0",
+      "urlParams": [
+        {
+          "name": "method",
+          "content": "user.getinfo"
+        },
+        {
+          "name": "api_key",
+          "content": "{{ .SecureJsonData.apiKey }}"
+        },
+        {
+          "name": "format",
+          "content": "json"
+        }
+      ]
+    },
+    {
+      "path": "getRecentTracks",
+      "url": "https://ws.audioscrobbler.com/2.0/",
+      "urlParams": [
+        {
+          "name": "method",
+          "content": "user.getrecenttracks"
+        },
+        {
+          "name": "api_key",
+          "content": "{{ .SecureJsonData.apiKey }}"
+        },
+        {
+          "name": "format",
+          "content": "json"
+        },
+        {
+          "name": "page",
+          "content": "1"
+        }
+      ]
+    }
+  ],
   "dependencies": {
     "grafanaDependency": ">=7.0.0",
     "plugins": []
