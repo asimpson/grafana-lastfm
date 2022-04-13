@@ -49,10 +49,14 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   async testDatasource() {
-    // Implement a health check for your data source.
+    const resp = await lastValueFrom(
+      getBackendSrv().fetch({
+        url: this.url + '/info',
+      })
+    );
     return {
-      status: 'success',
-      message: 'Success',
+      status: resp.status === 200 ? 'success' : 'failure',
+      message: resp.status === 200 ? 'API Key valid!' : 'API Key invalid!',
     };
   }
 }
