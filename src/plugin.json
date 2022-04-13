@@ -31,12 +31,16 @@
   },
   "routes": [
     {
-      "path": "getInfo",
+      "path": "info",
       "url": "https://ws.audioscrobbler.com/2.0",
       "urlParams": [
         {
           "name": "method",
           "content": "user.getinfo"
+        },
+        {
+          "name": "user",
+          "content": "rj"
         },
         {
           "name": "api_key",
@@ -49,12 +53,16 @@
       ]
     },
     {
-      "path": "getRecentTracks",
-      "url": "https://ws.audioscrobbler.com/2.0/",
+      "path": "tracks",
+      "url": "https://ws.audioscrobbler.com/2.0",
       "urlParams": [
         {
           "name": "method",
           "content": "user.getrecenttracks"
+        },
+        {
+          "name": "user",
+          "content": "rj"
         },
         {
           "name": "api_key",

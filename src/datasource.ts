@@ -25,7 +25,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   async query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
     const resp = lastValueFrom(
       getBackendSrv().fetch({
-        url: this.url + '/getInfo',
+        url: this.url + '/info',
       })
     );
     console.log(resp);
