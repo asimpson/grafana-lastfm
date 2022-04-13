@@ -1,4 +1,3 @@
-import defaults from 'lodash/defaults';
 import { lastValueFrom } from 'rxjs';
 
 import {
@@ -14,6 +13,17 @@ import { getBackendSrv } from '@grafana/runtime';
 
 import { MyQuery, MyDataSourceOptions, defaultQuery } from './types';
 
+interface Tracks {
+  track: [
+    {
+      name: string;
+      date: {
+        uts: string;
+      };
+    }
+  ];
+}
+
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   url?: string;
 
@@ -23,35 +33,44 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   async query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
-    const resp = lastValueFrom(
+    const resp = await lastValueFrom(
       getBackendSrv().fetch({
-        url: this.url + '/info',
+        url: this.url + '/tracks?limit=200&user=' + defaultQuery.user,
       })
     );
-    console.log(resp);
-    const { range } = options;
-    const from = range!.from.valueOf();
-    const to = range!.to.valueOf();
 
-    // Return a constant for each query.
-    const data = options.targets.map((target) => {
-      const query = defaults(target, defaultQuery);
-      return new MutableDataFrame({
-        refId: query.refId,
-        fields: [
-          { name: 'Time', values: [from, to], type: FieldType.time },
-          { name: 'Value', values: [query.constant, query.constant], type: FieldType.number },
-        ],
-      });
+    const d = resp.data as Record<string, Tracks>;
+    const validDates = d.recenttracks.track.filter((x) => x.date).map((x) => new Date(parseInt(x.date.uts, 10) * 1000));
+    const consolidateDays = [];
+
+    for (const singleDate of validDates) {
+      const sameDay = consolidateDays.filter(
+        (pd) => pd.getDate() === singleDate.getDate() && pd.getMonth() === singleDate.getMonth()
+      );
+      if (!sameDay.length) {
+        consolidateDays.push(singleDate);
+      }
+    }
+
+    const playCounts = consolidateDays.map(
+      (x) => validDates.filter((pd) => pd.getDate() === x.getDate() && pd.getMonth() === x.getMonth()).length
+    );
+
+    const frame = new MutableDataFrame({
+      refId: 'recentlyPlayed',
+      fields: [
+        { name: 'Time', values: consolidateDays, type: FieldType.time },
+        { name: 'Plays', values: playCounts, type: FieldType.number },
+      ],
     });
 
-    return { data };
+    return { data: [frame] };
   }
 
   async testDatasource() {
     const resp = await lastValueFrom(
       getBackendSrv().fetch({
-        url: this.url + '/info',
+        url: this.url + '/info?user=rj',
       })
     );
     return {
